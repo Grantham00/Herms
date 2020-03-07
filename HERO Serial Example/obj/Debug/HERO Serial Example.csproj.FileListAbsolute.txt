@@ -1,0 +1,18 @@
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\le\HERO Serial Example.exe
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\be\HERO Serial Example.exe
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\le\HERO Serial Example.pdb
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\be\HERO Serial Example.pdb
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\HERO Serial Example.exe
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\HERO Serial Example.pdb
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\le\HERO Serial Example.pe
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\le\HERO Serial Example.pdbx
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\be\HERO Serial Example.pe
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\bin\Debug\be\HERO Serial Example.pdbx
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\obj\Debug\HERO Serial Example.csprojAssemblyReference.cache
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\obj\Debug\TinyCLR_DebugReferences.cache
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\obj\Debug\be\HERO Serial Example.pe
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\obj\Debug\be\HERO Serial Example.pdbx
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\obj\Debug\le\HERO Serial Example.pe
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\obj\Debug\le\HERO Serial Example.pdbx
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\obj\Debug\HERO Serial Example.exe
+C:\Users\grant\Documents\GitHub\Phoenix-Examples-Languages\HERO C#\HERO Serial Example\obj\Debug\HERO Serial Example.pdb
