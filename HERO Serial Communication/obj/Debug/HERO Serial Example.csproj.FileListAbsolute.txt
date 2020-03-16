@@ -1,0 +1,18 @@
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\HERO Serial Example.csprojAssemblyReference.cache
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\TinyCLR_DebugReferences.cache
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\le\HERO Serial Example.exe
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\be\HERO Serial Example.exe
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\le\HERO Serial Example.pdb
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\be\HERO Serial Example.pdb
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\HERO Serial Example.exe
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\HERO Serial Example.pdb
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\le\HERO Serial Example.pe
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\le\HERO Serial Example.pdbx
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\be\HERO Serial Example.pe
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\bin\Debug\be\HERO Serial Example.pdbx
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\HERO Serial Example.exe
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\HERO Serial Example.pdb
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\be\HERO Serial Example.pe
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\be\HERO Serial Example.pdbx
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\le\HERO Serial Example.pe
+D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\le\HERO Serial Example.pdbx
