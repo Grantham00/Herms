@@ -88,6 +88,8 @@ namespace HERO_Serial_Example
 
 			while (true)
             {
+                string test_str = "poop";
+                _uart.Write(MakeByteArrayFromString(test_str), 0, test_str.Length);
                 /* read bytes out of uart */
                 if (_uart.BytesToRead > 0)
                 {
@@ -134,24 +136,17 @@ namespace HERO_Serial_Example
 							numcount = 1;
 						}
                         PushByte(_rx[i]);
-						Debug.Print("Char RECEIVED: " + (char)_rx[i]);
-						Debug.Print("Type: " +  _rx.GetType());
-						Debug.Print("_Rx = " + _rx[i]);
-
-						float myFloat = System.BitConverter.ToSingle(_rx, 0);
-
-						Debug.Print("myFloat = " + myFloat);
-						
+						float myFloat = System.BitConverter.ToSingle(_rx, 0);						
 					}
                 }
 				float myFloat2 = System.BitConverter.ToSingle(_rx, 0);
-				//Debug.Print("myFloat2 = " + myFloat2);
 
 				/* if there are bufferd bytes echo them back out */
 				if (_uart.CanWrite && (_txCnt > 0) )
                 {
                     scratch[0] = PopByte();
                     _uart.Write(scratch, 0, 1);
+                    
                 }
                 /* wait a bit, keep the main loop time constant, this way you can add to this example (motor control for example). */
                 System.Threading.Thread.Sleep(10);

@@ -16,3 +16,21 @@ D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-La
 D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\be\HERO Serial Example.pdbx
 D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\le\HERO Serial Example.pe
 D:\Documents\KSU\MTRE 4800\Phoenix-Examples-Languages-master\Phoenix-Examples-Languages-master\HERO C#\HERO Serial Example\obj\Debug\le\HERO Serial Example.pdbx
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\le\HERO Serial Example.exe
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\be\HERO Serial Example.exe
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\le\HERO Serial Example.pdb
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\be\HERO Serial Example.pdb
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\HERO Serial Example.exe
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\HERO Serial Example.pdb
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\le\HERO Serial Example.pe
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\le\HERO Serial Example.pdbx
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\be\HERO Serial Example.pe
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\bin\Debug\be\HERO Serial Example.pdbx
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\obj\Debug\HERO Serial Example.csprojAssemblyReference.cache
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\obj\Debug\TinyCLR_DebugReferences.cache
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\obj\Debug\be\HERO Serial Example.pe
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\obj\Debug\be\HERO Serial Example.pdbx
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\obj\Debug\le\HERO Serial Example.pe
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\obj\Debug\le\HERO Serial Example.pdbx
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\obj\Debug\HERO Serial Example.exe
+C:\Users\Ant\Documents\Herms\HERO Serial Communication\obj\Debug\HERO Serial Example.pdb
