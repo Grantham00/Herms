@@ -32,7 +32,7 @@ def serial_listen():
 def talker():
     pub = rospy.Publisher('Imu', Imu, queue_size=1)
     rospy.init_node('LISTEN_ODOM_IMU')
-    rate = rospy.rate(30)
+    rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         quaternion, gyro, accel = serial_listen()
         Imu.orientation = quaternion
