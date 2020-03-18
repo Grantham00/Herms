@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO.Ports;
 using System.Threading;
 using Microsoft.SPOT;
 using DriveStraightVelocityAuxiliary.Platform;
@@ -6,14 +7,67 @@ using CTRE.Phoenix.MotorControl;
 using CTRE.Phoenix.Sensors;
 
 namespace DriveStraightVelocityAuxiliary
+
 {
     public class Program
     {
-
+        /**
+             * SERIAL STUFF
+             * 
+             **/
+        /** Serial object, this is constructed on the serial number. */
+        static System.IO.Ports.SerialPort _uart;
+        /** Ring buffer holding the bytes to transmit. */
+        static byte[] _tx = new byte[1024];
+        static int _txIn = 0;
+        static int _txOut = 0;
+        static int _txCnt = 0;
+        /** Cache for reading out bytes in serial driver. */
+        static byte[] _rx = new byte[1024];
+        /* initial message to send to the terminal */
+        static byte[] _helloMsg = MakeByteArrayFromString("HERO BOARD ONLINE!\r\n");
+        /** @return the maximum number of bytes we can read*/
+        private static int CalcRemainingCap()
+        {
+            /* first calc the remaining capacity in the ring buffer */
+            int rem = _tx.Length - _txCnt;
+            /* cap the return to the maximum capacity of the rx array */
+            if (rem > _rx.Length)
+                rem = _rx.Length;
+            return rem;
+        }
+        /** @param received byte to push into ring buffer */
+        private static void PushByte(byte datum)
+        {
+            _tx[_txIn] = datum;
+            if (++_txIn >= _tx.Length)
+                _txIn = 0;
+            ++_txCnt;
+        }
+        /** 
+         * Pop the oldest byte out of the ring buffer.
+         * Caller must ensure there is at least one byte to pop out by checking _txCnt.
+         * @return the oldest byte in buffer.
+         */
+        private static byte PopByte()
+        {
+            byte retval = _tx[_txOut];
+            if (++_txOut >= _tx.Length)
+                _txOut = 0;
+            --_txCnt;
+            return retval;
+        }
+        private static byte[] MakeByteArrayFromString(String msg)
+        {
+            byte[] retval = new byte[msg.Length];
+            for (int i = 0; i < msg.Length; ++i)
+                retval[i] = (byte)msg[i];
+            return retval;
+        }
         public static void Main()
         {
             //Init a new array of 2 values. This is XY destination
-            float[] coord = new float[2] {3, 3 };
+            float[] coord = new float[2] {3, 3};
 
             //new empty array for storing IMU yaw-pitch-roll data
             float[] ypr = new float[3];
@@ -136,26 +190,112 @@ namespace DriveStraightVelocityAuxiliary
             bool[] _btns = new bool[Constants.kNumButtonsPlusOne];
             bool[] btns = new bool[Constants.kNumButtonsPlusOne];
 
+
+            
+
+
+
+
             /* Initialize */
             bool _state = false;
             bool _firstCall = true;
-            //float _targetAngle = 0;
+            float _targetAngle = 0;
+            bool start = false;
+            string input = "";
+            int count = 0;
+            int numcount = 1;
+            double[] cmd_vel = new double[2] { 0, 0 };
+            double[] prev_cmd_vel = cmd_vel;
+
+            _uart = new System.IO.Ports.SerialPort(CTRE.HERO.IO.Port4.UART, 115200);
+            _uart.Open();
+            /* send a message to the terminal for the user to see */
+            _uart.Write(_helloMsg, 0, _helloMsg.Length);
 
             //set encoder and IMU values to zero
             ZeroSensors();
 
             while (true)
             {
+                float[] quaternion = new float[4];
+                Hardware._pidgey.Get6dQuaternion(quaternion);
+                float[] gyro = new float[3];
+                Hardware._pidgey.GetRawGyro(gyro);
+                short[] accel = new short[3];
+                Hardware._pidgey.GetBiasedAccelerometer(accel);
+
+                float encoder_velocity_left = Hardware._leftTalon.GetSelectedSensorVelocity();
+                float encoder_velocity_right = Hardware._rightTalon.GetSelectedSensorVelocity();
+
+                string quaternion_string = "[" + quaternion[0] + "," + quaternion[1] + "," + quaternion[2] + "," + quaternion[3] + "]";
+                string gyro_string = "[" + gyro[0] + "," + gyro[1] + "," + gyro[2] + "]";
+                string accel_string = "[" + accel[0] + "," + accel[1] + "," + accel[2] + "]";
+                string encoder_velocity_right_string = encoder_velocity_right.ToString();
+                string encoder_velocity_left_string = encoder_velocity_left.ToString();
+                string all_telem = "{" + quaternion_string + "-" + gyro_string + "-" + accel_string + "-" + encoder_velocity_left_string + "-" + encoder_velocity_right_string + "}\n";
+                Byte[] telem = new byte[all_telem.Length];
+                telem = MakeByteArrayFromString(all_telem);
+                _uart.Write(telem, 0, all_telem.Length);
+
+                Debug.Print(all_telem);
+
+                //_uart.Write(MakeByteArrayFromString("{" + encoder_velocity_left_string + "-" + encoder_velocity_right_string + "}\n"), 0, 30);
+
+                /* read bytes out of uart */
+                if (_uart.BytesToRead > 0)
+                {
+                    int readCnt = _uart.Read(_rx, 0, CalcRemainingCap());
+                    char[] array = new char[readCnt];
+                    for (int i = 0; i < readCnt; ++i)
+                    {
+                        if (_rx[i] == 91)
+                        {
+                            //Debug.Print("START");
+                            start = true;
+                        }
+                        if (start == true && _rx[i] != 91 && _rx[i] != 93)
+                        {
+                            array[i] = (char)_rx[i];
+                            count++;
+                            //Debug.Print("ADD CHAR");
+                            input = input + array[i].ToString();
+                        }
+                        if (_rx[i] == 44)
+                        {
+                            numcount++;
+                        }
+                        if (_rx[i] == 93)
+                        {
+                            //Debug.Print("STOP");
+                            start = false;
+
+                            Debug.Print(input);
+                            string[] splitstrings = new string[numcount];
+
+                            splitstrings = input.Split(",".ToCharArray());
+
+
+                            for (int j = 0; j < numcount; j++)
+                            {
+                                cmd_vel[j] = double.Parse(splitstrings[j]);
+                                //Debug.Print("CMD VEL:\nLINEAR_X: " + j.ToString() + "\nANGULAR_Z: " + cmd_vel[j].ToString());
+                            }
+
+                            /* RESET INPUT */
+                            input = "";
+                            numcount = 1;
+                        }
+                        PushByte(_rx[i]);
+                    }
+                }
+
+                /* MOTOR CONTROL */
+
                 /* Enable motor controllers if gamepad connected */
                 if (Hardware._gamepad.GetConnectionStatus() == CTRE.Phoenix.UsbDeviceConnection.Connected)
                     CTRE.Phoenix.Watchdog.Feed();
 
-                /* Gamepad value processing */
-                float forward = -1 * Hardware._gamepad.GetAxis(1);
-                float turn = 1 * Hardware._gamepad.GetAxis(0);
-                //Deadband creates area of rejecting small gamepad inputs
-                CTRE.Phoenix.Util.Deadband(ref forward);
-                CTRE.Phoenix.Util.Deadband(ref turn);
+                
 
                 /* Button processing */
                 //Pass GetButtons() an array (btns), it will fill it with the button values from gamepad
@@ -187,6 +327,14 @@ namespace DriveStraightVelocityAuxiliary
                         Debug.Print("This is basic Arcade Drive with Arbitrary Feed-forward.\n");
                         //ZeroSensors();
                     }
+
+                    /* Gamepad value processing */
+                    float forward = -1 * Hardware._gamepad.GetAxis(1);
+                    float turn = 1 * Hardware._gamepad.GetAxis(0);
+                    //Deadband creates area of rejecting small gamepad inputs
+                    CTRE.Phoenix.Util.Deadband(ref forward);
+                    CTRE.Phoenix.Util.Deadband(ref turn);
+
                     Hardware._rightTalon.SetInverted(false);
                     Hardware._leftTalon.SetInverted(false);
                     /* Use Arbitrary FeedForward to create an Arcade Drive Control by modifying the forward output */
@@ -196,8 +344,10 @@ namespace DriveStraightVelocityAuxiliary
                     //Debug.Print("RightEncoder: " + Hardware._rightTalon.GetSelectedSensorPosition().ToString());
                     Hardware._pidgey.GetYawPitchRoll(ypr);
                     //Debug.Print("Magnetometer: " + ypr[0]);
-                    //Debug.Print((forward/2).ToString());
-                    //Debug.Print((turn / 2).ToString());
+                    Debug.Print("FORWARD: " + forward.ToString());
+                    Debug.Print("TURN: " + turn.ToString());
+
+
                 }
                 else
                 {
@@ -211,15 +361,33 @@ namespace DriveStraightVelocityAuxiliary
                         Hardware._rightTalon.SelectProfileSlot(Constants.kSlot_Velocit, Constants.PID_PRIMARY);
                         Hardware._rightTalon.SelectProfileSlot(Constants.kSlot_Turning, Constants.PID_TURN);
 
-                        Debug.Print("Starting rotateDrive...");
-                        rotateDrive(coord);
-                        _state = !_state;
+                        Debug.Print("DRIVE BY PI...");
                     }
+                    /* Gamepad value processing */
+                    float forward = -1 * (float)cmd_vel[0];
+                    float turn = 1 * (float)cmd_vel[1];
 
-                    /* Calculate targets from gamepad inputs */
+                    /* Calculate targets from inputs */
+                    float target_RPM = forward * 500; /* +- 500 RPM */
+                    float target_unitsPer100ms = target_RPM * Constants.kSensorUnitsPerRotation / 600.0f;
+                    float target_turn = _targetAngle;
 
-                    //Hardware._leftTalon.Set(ControlMode.Velocity, target_unitsPer100ms_left, DemandType.AuxPID, 0);
+                    Debug.Print("FORWARD: " + forward.ToString());
+                    Debug.Print("TURN: " + turn.ToString());
 
+                    if (cmd_vel[1] == 0 || turn == 0)
+                    {
+                        /* Configured for Velocity Closed Loop on Quad Encoders' Sum and Auxiliary PID on Quadrature Encoders' Difference*/
+                        Hardware._rightTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, target_turn);
+                        Hardware._leftTalon.Follow(Hardware._rightTalon, FollowerType.AuxOutput1);
+                        //Hardware._leftTalon.Set(ControlMode.Velocity, target_unitsPer100ms_left, DemandType.AuxPID, 0);
+                    }
+                    else
+                    {
+                        Hardware._rightTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, target_turn);
+                        Hardware._leftTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, target_turn);
+
+                    }
                 }
                 _firstCall = false;
 
@@ -227,169 +395,170 @@ namespace DriveStraightVelocityAuxiliary
             }
         }
 
-        static void Forward()
-        {
-            float target_RPM = 125; /* +- 500 RPM */
-            float target_unitsPer100ms = target_RPM * Constants.kSensorUnitsPerRotation / 600.0f;
+        //static void Forward()
+        //{
+        //    float target_RPM = 125; /* +- 500 RPM */
+        //    float target_unitsPer100ms = target_RPM * Constants.kSensorUnitsPerRotation / 600.0f;
 
-            //float target_turn = _targetAngle;
-            Hardware._rightTalon.SetInverted(false);
-            Hardware._leftTalon.SetInverted(false);
+        //    //float target_turn = _targetAngle;
+        //    Hardware._rightTalon.SetInverted(false);
+        //    Hardware._leftTalon.SetInverted(false);
 
-            /* Configured for Velocity Closed Loop on Quad Encoders' Sum and Auxiliary PID on Quadrature Encoders' Difference*/
-            Hardware._rightTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, 0);
+        //    /* Configured for Velocity Closed Loop on Quad Encoders' Sum and Auxiliary PID on Quadrature Encoders' Difference*/
+        //    Hardware._rightTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, 0);
 
-            Hardware._leftTalon.Follow(Hardware._rightTalon, FollowerType.AuxOutput1);
-        }
-        static void ForwardDistance(double dist)
-        {
-            //convert feet to encodervalues
-            double encoderDistance = (8000 / 31.41) * ((dist * 12)-3);
-            //loop while left or right talon are less than encoderDistance
-            while ((Hardware._leftTalon.GetSelectedSensorPosition() < encoderDistance || Hardware._rightTalon.GetSelectedSensorPosition() < encoderDistance) && !Hardware._gamepad.GetButton(3))
-            {
-                //Send robot forward at 35%
-                Forward();
-                CTRE.Phoenix.Watchdog.Feed();
+        //    Hardware._leftTalon.Follow(Hardware._rightTalon, FollowerType.AuxOutput1);
+        //}
 
-                Debug.Print("dist: " + dist);
-                Debug.Print("EncoderDistance: " + encoderDistance.ToString());
-                Debug.Print("\n");
+        //static void ForwardDistance(double dist)
+        //{
+        //    //convert feet to encodervalues
+        //    double encoderDistance = (8000 / 31.41) * ((dist * 12)-3);
+        //    //loop while left or right talon are less than encoderDistance
+        //    while ((Hardware._leftTalon.GetSelectedSensorPosition() < encoderDistance || Hardware._rightTalon.GetSelectedSensorPosition() < encoderDistance) && !Hardware._gamepad.GetButton(3))
+        //    {
+        //        //Send robot forward at 35%
+        //        Forward();
+        //        CTRE.Phoenix.Watchdog.Feed();
 
-                Debug.Print("leftEncoder: " + Hardware._leftTalon.GetSelectedSensorPosition().ToString());
-                Debug.Print("\n");
+        //        Debug.Print("dist: " + dist);
+        //        Debug.Print("EncoderDistance: " + encoderDistance.ToString());
+        //        Debug.Print("\n");
 
-                Debug.Print("rightEncoder: " + Hardware._rightTalon.GetSelectedSensorPosition().ToString());
-                Debug.Print("\n");
-                Thread.Sleep(10);
-            }
-            Debug.Print("DUN");
-            //After arriving, Change controlmode to 0% (stop)
-            Hardware._rightTalon.Set(ControlMode.PercentOutput, 0, DemandType.ArbitraryFeedForward, 0);
-            Hardware._leftTalon.Set(ControlMode.PercentOutput, 0, DemandType.ArbitraryFeedForward, 0);
-        }
+        //        Debug.Print("leftEncoder: " + Hardware._leftTalon.GetSelectedSensorPosition().ToString());
+        //        Debug.Print("\n");
 
-        static void TurnLeftTheta(double theta)
-        {
-            Debug.Print("TurnLeftTheta");
-            //new empty ypr array
-            float[] ypr = new float[3];
+        //        Debug.Print("rightEncoder: " + Hardware._rightTalon.GetSelectedSensorPosition().ToString());
+        //        Debug.Print("\n");
+        //        Thread.Sleep(10);
+        //    }
+        //    Debug.Print("DUN");
+        //    //After arriving, Change controlmode to 0% (stop)
+        //    Hardware._rightTalon.Set(ControlMode.PercentOutput, 0, DemandType.ArbitraryFeedForward, 0);
+        //    Hardware._leftTalon.Set(ControlMode.PercentOutput, 0, DemandType.ArbitraryFeedForward, 0);
+        //}
 
-            //SetYaw of IMU to zero (also in ZeroSensors())
-            Hardware._pidgey.SetYaw(0);
-            //Fill ypr array with YawPitchRoll from IMU
-            Hardware._pidgey.GetYawPitchRoll(ypr);
-            //print current yaw (zero) and destination theta
-            Debug.Print("ypr[0] = " + ypr[0].ToString());
-            Debug.Print("theta = " + theta.ToString());
-            Hardware._pidgey.GetYawPitchRoll(ypr);
-            
-            //While ypr[0] (Yaw) is less than destination theta then loop this. Kill when Button3
-            while (ypr[0] < (theta - 3.5) && !Hardware._gamepad.GetButton(3))
-            {
-                //float target_RPM = 125; /* +- 500 RPM */
-                //float target_unitsPer100ms = target_RPM * Constants.kSensorUnitsPerRotation / 600.0f;
+        //static void TurnLeftTheta(double theta)
+        //{
+        //    Debug.Print("TurnLeftTheta");
+        //    //new empty ypr array
+        //    float[] ypr = new float[3];
 
-                //Instead of doing math, hardcode a velocity for rotating
-                float target_unitsPer100ms = 853.33F;
+        //    //SetYaw of IMU to zero (also in ZeroSensors())
+        //    Hardware._pidgey.SetYaw(0);
+        //    //Fill ypr array with YawPitchRoll from IMU
+        //    Hardware._pidgey.GetYawPitchRoll(ypr);
+        //    //print current yaw (zero) and destination theta
+        //    Debug.Print("ypr[0] = " + ypr[0].ToString());
+        //    Debug.Print("theta = " + theta.ToString());
+        //    Hardware._pidgey.GetYawPitchRoll(ypr);
 
-                //Invert Right, Uninvert left to turn left
-                Hardware._rightTalon.SetInverted(true);
-                Hardware._rightTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, 0);
-                Hardware._leftTalon.SetInverted(false);
-                //set left to follow right talon(but inverted)
-                Hardware._leftTalon.Follow(Hardware._rightTalon, FollowerType.AuxOutput1);
+        //    //While ypr[0] (Yaw) is less than destination theta then loop this. Kill when Button3
+        //    while (ypr[0] < (theta - 3.5) && !Hardware._gamepad.GetButton(3))
+        //    {
+        //        //float target_RPM = 125; /* +- 500 RPM */
+        //        //float target_unitsPer100ms = target_RPM * Constants.kSensorUnitsPerRotation / 600.0f;
 
-                //Update ypr values
-                Hardware._pidgey.GetYawPitchRoll(ypr);
+        //        //Instead of doing math, hardcode a velocity for rotating
+        //        float target_unitsPer100ms = 853.33F;
 
-                //Hardware._pidgey.GetYawPitchRoll(ypr);
+        //        //Invert Right, Uninvert left to turn left
+        //        Hardware._rightTalon.SetInverted(true);
+        //        Hardware._rightTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, 0);
+        //        Hardware._leftTalon.SetInverted(false);
+        //        //set left to follow right talon(but inverted)
+        //        Hardware._leftTalon.Follow(Hardware._rightTalon, FollowerType.AuxOutput1);
 
-                //Watcdog.Feed gives motor control 
-                CTRE.Phoenix.Watchdog.Feed();
-                //Print the following to the debug screen
-                Debug.Print("TurnRightTheta\n");
-                //print yaw
-                Debug.Print("Magnetometer " + (ypr[0].ToString()));
-                Debug.Print("\n");
+        //        //Update ypr values
+        //        Hardware._pidgey.GetYawPitchRoll(ypr);
 
-                Debug.Print("\n");
-                Thread.Sleep(10);
-            }
-        }
-        //same as TurnLeftTheta, but inverted motor config and negative target_unitsPer100ms
-        static void TurnRightTheta(double theta)
-        {
-            Debug.Print("TurnRightTheta");
+        //        //Hardware._pidgey.GetYawPitchRoll(ypr);
 
-            float[] ypr = new float[3];
+        //        //Watcdog.Feed gives motor control 
+        //        CTRE.Phoenix.Watchdog.Feed();
+        //        //Print the following to the debug screen
+        //        Debug.Print("TurnRightTheta\n");
+        //        //print yaw
+        //        Debug.Print("Magnetometer " + (ypr[0].ToString()));
+        //        Debug.Print("\n");
 
-            Hardware._pidgey.SetYaw(0);
-            Hardware._pidgey.GetYawPitchRoll(ypr);
-            Debug.Print("ypr[0] = " + ypr[0].ToString());
-            Debug.Print("theta = " + theta.ToString());
+        //        Debug.Print("\n");
+        //        Thread.Sleep(10);
+        //    }
+        //}
+        ////same as TurnLeftTheta, but inverted motor config and negative target_unitsPer100ms
+        //static void TurnRightTheta(double theta)
+        //{
+        //    Debug.Print("TurnRightTheta");
 
-            while (ypr[0] > -(theta - 3.5) && !Hardware._gamepad.GetButton(3))
-            {
-                //float target_RPM = 125; /* +- 500 RPM */
-                //float target_unitsPer100ms = target_RPM * Constants.kSensorUnitsPerRotation / 600.0f;
-                float target_unitsPer100ms = -853.33F;
+        //    float[] ypr = new float[3];
 
-                Hardware._rightTalon.SetInverted(false);
-                Hardware._rightTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, 0);
-                Hardware._leftTalon.SetInverted(true);
-                Hardware._leftTalon.Follow(Hardware._rightTalon, FollowerType.AuxOutput1);
+        //    Hardware._pidgey.SetYaw(0);
+        //    Hardware._pidgey.GetYawPitchRoll(ypr);
+        //    Debug.Print("ypr[0] = " + ypr[0].ToString());
+        //    Debug.Print("theta = " + theta.ToString());
 
-                Hardware._pidgey.GetYawPitchRoll(ypr);
+        //    while (ypr[0] > -(theta - 3.5) && !Hardware._gamepad.GetButton(3))
+        //    {
+        //        //float target_RPM = 125; /* +- 500 RPM */
+        //        //float target_unitsPer100ms = target_RPM * Constants.kSensorUnitsPerRotation / 600.0f;
+        //        float target_unitsPer100ms = -853.33F;
 
-                //Hardware._pidgey.GetYawPitchRoll(ypr);
-                CTRE.Phoenix.Watchdog.Feed();
-                //Print the following to the debug screen
-                Debug.Print("TurnRightTheta\n");
-                Debug.Print("Magnetometer " + (ypr[0].ToString()));
-                Debug.Print("\n");
+        //        Hardware._rightTalon.SetInverted(false);
+        //        Hardware._rightTalon.Set(ControlMode.Velocity, target_unitsPer100ms, DemandType.AuxPID, 0);
+        //        Hardware._leftTalon.SetInverted(true);
+        //        Hardware._leftTalon.Follow(Hardware._rightTalon, FollowerType.AuxOutput1);
 
-                Debug.Print("\n");
-                Thread.Sleep(10);
-            }
-            Debug.Print("DUN");
-            Hardware._rightTalon.Set(ControlMode.PercentOutput, 0, DemandType.ArbitraryFeedForward, 0);
-            Hardware._leftTalon.Set(ControlMode.PercentOutput, 0, DemandType.ArbitraryFeedForward, 0);
-        }
+        //        Hardware._pidgey.GetYawPitchRoll(ypr);
 
-        
-        static void Turn180()
-        {
-            TurnLeftTheta(180);
-        }
+        //        //Hardware._pidgey.GetYawPitchRoll(ypr);
+        //        CTRE.Phoenix.Watchdog.Feed();
+        //        //Print the following to the debug screen
+        //        Debug.Print("TurnRightTheta\n");
+        //        Debug.Print("Magnetometer " + (ypr[0].ToString()));
+        //        Debug.Print("\n");
 
-        static void rotateDrive(float[] coord)
-        {
-            //Do trig to convert X and Y to polar
-            double theta = (System.Math.Atan(coord[1] / coord[0])) * (180 / System.Math.PI);
-            double radius = System.Math.Sqrt((coord[0] * coord[0]) + (coord[1] * coord[1]));
-            ZeroPosition();
-            ZeroSensors();
-            //If theta is positive, turn right
-            if (theta > 0)
-            {
-                TurnRightTheta(theta);
-                ZeroPosition();
-
-                ForwardDistance(radius);
-
-            }
-            //if theta is negative, turn left
-            else if (theta < 0)
-            {
-                TurnLeftTheta(theta);
-                ZeroPosition();
-
-                ForwardDistance(radius);
-            }
+        //        Debug.Print("\n");
+        //        Thread.Sleep(10);
+        //    }
+        //    Debug.Print("DUN");
+        //    Hardware._rightTalon.Set(ControlMode.PercentOutput, 0, DemandType.ArbitraryFeedForward, 0);
+        //    Hardware._leftTalon.Set(ControlMode.PercentOutput, 0, DemandType.ArbitraryFeedForward, 0);
+        //}
 
 
-        }
+        //static void Turn180()
+        //{
+        //    TurnLeftTheta(180);
+        //}
+
+        //static void rotateDrive(float[] coord)
+        //{
+        //    //Do trig to convert X and Y to polar
+        //    double theta = (System.Math.Atan(coord[1] / coord[0])) * (180 / System.Math.PI);
+        //    double radius = System.Math.Sqrt((coord[0] * coord[0]) + (coord[1] * coord[1]));
+        //    ZeroPosition();
+        //    ZeroSensors();
+        //    //If theta is positive, turn right
+        //    if (theta > 0)
+        //    {
+        //        TurnRightTheta(theta);
+        //        ZeroPosition();
+
+        //        ForwardDistance(radius);
+
+        //    }
+        //    //if theta is negative, turn left
+        //    else if (theta < 0)
+        //    {
+        //        TurnLeftTheta(theta);
+        //        ZeroPosition();
+
+        //        ForwardDistance(radius);
+        //    }
+
+
+        //}
 
         /** Zero all sensors used in Auxiliary Example */
         static void ZeroSensors()

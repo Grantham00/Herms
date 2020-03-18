@@ -46,9 +46,10 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.SPOT.Hardware" />
+    <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
     <Reference Include="Microsoft.SPOT.Native" />
   </ItemGroup>
   <PropertyGroup>
-  <LangVersion>5</LangVersion>
+    <LangVersion>5</LangVersion>
   </PropertyGroup>
 </Project>
