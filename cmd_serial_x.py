@@ -14,7 +14,7 @@ import serial
 def callback(data):
     print('callback')
     rospy.loginfo('poop')
-    print(data.linear.y)
+    print(data.linear.x)
     print(data.angular.z)
     send(data)
     rospy.sleep(0.2)
@@ -36,7 +36,7 @@ def send(data):
     if (('ser' not in locals()) or ('ser' not in globals())):
         global ser
         ser = serial.Serial('/dev/ttyUSB0', 115200)
-    message = '[{},{}]'.format(round(data.linear.y,4), round(data.angular.z,4))
+    message = '[{},{}]'.format(round(data.linear.x,4), round(data.angular.z,4))
     print(message)
     ser.write(b'{}'.format(message))
 
